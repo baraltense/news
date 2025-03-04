@@ -28,7 +28,7 @@ def upload_to_github():
     # Autenticar con GitHub usando el token personal
     github_token = os.getenv('GITHUB_TOKEN')
     g = Github(github_token)
-    repo = g.get_repo('baraltense/news')  # Reemplaza con tu usuario y repositorio
+    repo = g.get_repo('news')  # Reemplaza con tu usuario y repositorio
     
     # Abre el archivo JSON que se guardó
     with open("news_data.json", "rb") as file:
