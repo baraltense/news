@@ -3,48 +3,57 @@ import requests
 import json
 from github import Github
 
-# Obtener el token de la API de Noticias desde el secreto
-API_KEY = os.getenv("API_NEWS")
+# Obtener el token de la API de noticias desde el secreto NEWS_API_KEY
+API_KEY = os.getenv("NEWS_API_KEY")
 
-# Realizar la solicitud a la API de noticias
+# URL base de la nueva API (NewsDataHub)
+BASE_URL = 'https://api.newsdatahub.com/v1/news'
+
+# Encabezados para la API
+headers = {
+    'X-Api-Key': API_KEY,
+    'User-Agent': 'YourApp/1.0'  # Reemplaza "YourApp/1.0" con el nombre de tu aplicación si lo deseas
+}
+
+# Función para obtener noticias internacionales en español
 def get_news():
-    url = f'https://newsapi.org/v2/top-headlines?country=ve&language=es&apiKey={API_KEY}'
-    response = requests.get(url)
+    # Usamos el parámetro language=es para obtener artículos en español
+    params = {'language': 'es'}
+    response = requests.get(BASE_URL, headers=headers, params=params)
     news = response.json()
-
-    # Verificar si la solicitud fue exitosa
-    if news['status'] == 'ok':
-        # Extrae los titulares de las noticias
-        headlines = [article['title'] for article in news['articles'][:5]]
+    
+    if 'data' in news:
+        # Extraemos los primeros 5 titulares
+        headlines = [article['title'] for article in news['data'][:5]]
         return headlines
     else:
         print("Error al obtener noticias:", news.get('message', 'Sin mensaje de error'))
         return []
 
-# Crear archivo JSON
+# Función para guardar los titulares en un archivo JSON
 def save_to_json(data):
-    with open("news_data.json", "w") as file:
+    with open("news_data.json", "w", encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
     print("Datos guardados correctamente en news_data.json")
 
-# Subir el archivo JSON a GitHub
+# Función para subir el archivo JSON a GitHub
 def upload_to_github():
-    # Conectar con GitHub usando el token de GitHub
-    github_token = os.getenv("GITHUB_TOKEN")
+    # Conectar con GitHub usando el token almacenado en el secreto API_NEW
+    github_token = os.getenv("API_NEW")
     g = Github(github_token)
-    repo = g.get_repo("baraltense/news")  # Cambia a tu usuario/repositorio
+    repo = g.get_repo("baraltense/news")  # Asegúrate de que el repositorio sea correcto
 
-    with open("news_data.json", "r") as file:
+    with open("news_data.json", "r", encoding='utf-8') as file:
         content = file.read()
 
     try:
-        # Si el archivo existe, lo actualiza; si no, lo crea
-        repo.create_file("news_data.json", "Subiendo noticias", content, branch="main", committer="GitHub Actions", author="GitHub Actions")
+        # Intentamos crear el archivo en la rama "main"
+        repo.create_file("news_data.json", "Subiendo noticias internacionales en español", content, branch="main")
         print("Archivo subido correctamente a GitHub.")
     except Exception as e:
         print(f"Error al subir el archivo: {e}")
 
-# Llamada a la función
+# Ejecución principal del script
 if __name__ == "__main__":
     headlines = get_news()
     if headlines:
