@@ -1,29 +1,29 @@
-name: Fetch News and Save to JSON
+name: Subir Noticias a GitHub
 
 on:
   schedule:
-    # Ejecutar cada 5 minutos
-    - cron: '*/5 * * * *'  # Esto es para ejecutar el trabajo cada 5 minutos
-  workflow_dispatch:  # Esto permite ejecutar el flujo manualmente desde la interfaz de GitHub Actions
+    - cron: '*/5 * * * *'  # Esto ejecutará el script cada 5 minutos
 
 jobs:
-  fetch_news_data:
-    runs-on: ubuntu-latest  # Esto se ejecuta en un entorno Ubuntu
+  upload-news:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2  # Checkout del código de tu repositorio
+      - name: Obtener código
+        uses: actions/checkout@v2
 
-      - name: Set up Python
+      - name: Configurar Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'  # Puedes elegir la versión de Python que prefieras
+          python-version: '3.8'
 
-      - name: Install dependencies
+      - name: Instalar dependencias
         run: |
-          pip install -r requirements.txt  # Instala las dependencias necesarias
+          python -m pip install --upgrade pip
+          pip install github requests
 
-      - name: Run the script to fetch news and save to JSON
+      - name: Ejecutar script
+        run: |
+          python main.py
         env:
-          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}  # Accede al secreto para la API Key
-        run: |
-          python main.py  # Ejecuta tu archivo principal para obtener noticias y guardarlas en JSON
+          API_NEWS: ${{ secrets.API_NEWS }}  # Usar el secreto correcto para el token de la API de noticias
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Asegúrate de pasar también el token de GitHub
